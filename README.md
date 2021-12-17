@@ -38,9 +38,20 @@ Call script with
 
 ## Options
 
-`python analyze.py --input <path> [--name <chat name>] [--lang <language>] [--bannedwords <path>]`
+`Usage: python analyze.py --input <path> [--name <chat name>] [--lang <language>] [--bannedwords <path>] [--jobs "job-id1 job-id2 job-id3"]`
 
-- **-i, --input**: Specifies path to the input-file, **required**
-- **-n, --name**: Specifies a custom name for chat, default will be filename, **optional**
-- **-l, --lang**: Specifies chat language to filter words, default is "english", **optional**
-- **-b, --bannedwords**: Path to custom list of banned words to filter out, **optional**
+- **--input**: Specifies path to the input-file, **required**
+- **--name**: Specifies a custom name for chat, default will be filename, **optional**
+- **--lang**: Specifies chat language to filter words, default is "english", **optional**
+- **--bannedwords**: Path to custom list of banned words to filter out, **optional**
+- **--jobs**: List of job-IDs to execute, **optional**
+  - **0**: Plot messages by author
+  - **1**: Plot media sent by author
+  - **2**: Plot messages by date
+  - **3**: Plot messages by hour
+  - **4**: Plot messages by month and weekday
+  - **5**: Plot word cloud
+  - **6**: Plot messages by weekday
+  - **7**: Plot mentions by name
+  - **8**: Plot message length by author
+  - **9**: Export data

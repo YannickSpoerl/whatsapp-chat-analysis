@@ -79,7 +79,7 @@ def __parse_chat(chat_path: str) -> pd.DataFrame:
 
     data_frame = pd.DataFrame(parsed_data, columns=["date_time", "Author", "Message"])
 
-    print("Parsed chat data.")
+    print(f"Parsed chat data from {chat_path}")
     return data_frame
 
 
@@ -125,6 +125,7 @@ def __get_stopwords(language: str, banned_path: Optional[str]) -> set[str]:
     if banned_path:
         extra = __read_in_wordlist(banned_path)
         banned_words.extend(extra)
+        print(f"Got list of banned words: {banned_path}")
     return set(banned_words)
 
 
@@ -137,7 +138,7 @@ def __get_months() -> list[str]:
             "November"]
 
 
-def __export_data(data_frame: pd.DataFrame, chat_name: str):
+def export_data(data_frame: pd.DataFrame, chat_name: str):
     export_file_name = f"chat_analysis_{chat_name}/export.csv"
     # noinspection PyTypeChecker
     data_frame.to_csv(export_file_name)
@@ -227,7 +228,7 @@ def get_basic_facts(data_frame: pd.DataFrame):
     average_message_letters = data_frame["Letter count"].mean()
     average_message_day = data_frame.groupby("Date")["Message"].count().mean()
 
-    print(f"Total Messages:              {total_messages}")
+    print(f"\nTotal Messages:              {total_messages}")
     print(f"Media Message:               {media_messages}")
     print(f"Average Words by Messages:   {round(average_message_words)}")
     print(f"Average Letters by Messages: {round(average_message_letters)}")
@@ -330,7 +331,7 @@ def plot_message_length_by_author(data_frame: pd.DataFrame, chat_name: str):
     print(f"Generated {filename}", end=" ")
 
 
-def do_analysis(chat_path: str, chat_name: str, language: str, banned_words=None):
+def do_analysis(chat_path: str, chat_name: str, language: str, banned_words=None, selected_jobs=None):
     print(f"Processing chat {chat_name}")
     print(f"Chat language: {language}")
 
@@ -341,34 +342,42 @@ def do_analysis(chat_path: str, chat_name: str, language: str, banned_words=None
     __setup_extra_columns(chat)
     get_basic_facts(chat)
 
-    jobs = [
-        (plot_messages_by_author, [chat, chat_name]),
-        (plot_media_sent_by_author, [chat, chat_name]),
-        (plot_messages_by_date, [chat, chat_name]),
-        (plot_messages_by_hour, [chat, chat_name]),
-        (plot_messages_by_month_and_weekday, [chat, chat_name]),
-        (plot_word_cloud, [chat, chat_name, language, banned_words]),
-        (plot_messages_by_weekday, [chat, chat_name]),
-        (plot_mentions_by_name, [chat, chat_name]),
-        (plot_message_length_by_author, [chat, chat_name]),
-        (__export_data, [chat, chat_name])
-    ]
-    print(f"\nStarting {len(jobs)} analysis jobs...")
+    available_jobs = {
+        0: (plot_messages_by_author, [chat, chat_name]),
+        1: (plot_media_sent_by_author, [chat, chat_name]),
+        2: (plot_messages_by_date, [chat, chat_name]),
+        3: (plot_messages_by_hour, [chat, chat_name]),
+        4: (plot_messages_by_month_and_weekday, [chat, chat_name]),
+        5: (plot_word_cloud, [chat, chat_name, language, banned_words]),
+        6: (plot_messages_by_weekday, [chat, chat_name]),
+        7: (plot_mentions_by_name, [chat, chat_name]),
+        8: (plot_message_length_by_author, [chat, chat_name]),
+        9: (export_data, [chat, chat_name])
+    }
+    if selected_jobs:
+        selected_jobs = [int(j) for j in selected_jobs.split()]
+    else:
+        selected_jobs = available_jobs.keys()
+    jobs = [available_jobs[job_id] for job_id in available_jobs.keys() if job_id in selected_jobs]
+
+    print(f"\nStarting {len(jobs)} analysis jobs {selected_jobs} ...")
     for i, job in enumerate(jobs):
         job[0](*job[1])
         print(f"({i + 1}/{len(jobs)})")
 
 
 def call_script():
-    err_mssg = "Usage: python analyze.py --input <path> [--name <chat name>] [--lang <language>] [--bannedwords <path>]"
+    err_mssg = "Usage: python analyze.py --input <path> [--name <chat name>] [--lang <language>] [--bannedwords " \
+               "<path>] [--jobs \"job-id1 job-id2 job-id3\"]"
 
     input_name = None
     input_path = None
     language = None
     banned_words = None
+    jobs = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hi:nlba", ["input=", "name=", "lang=", "bannedwords="])
+        opts, args = getopt.getopt(sys.argv[1:], "h", ["input=", "name=", "lang=", "bannedwords=", "jobs="])
     except getopt.GetoptError:
         print(err_mssg)
         sys.exit(1)
@@ -377,17 +386,22 @@ def call_script():
         if opt == '-h':
             print(err_mssg)
             sys.exit()
-        elif opt in ("-i", "--input"):
+        elif opt == "--input":
             input_path = arg
-        elif opt in ("-n", "--name"):
+        elif opt == "--name":
             input_name = arg
-        elif opt in ("-l", "--lang"):
+        elif opt == "--lang":
             language = arg
-        elif opt in ("-b", "--bannedwords"):
+        elif opt == "--bannedwords":
             banned_words = arg
+        elif opt == "--jobs":
+            jobs = arg
 
     if not language:
         language = "english"
+
+    if not jobs:
+        jobs = "0 1 2 3 4 5 6 7 8 9"
 
     if not input_path:
         print(err_mssg)
@@ -402,7 +416,7 @@ def call_script():
         if len(input_name.split(".")) > 1:
             input_name = input_name.split(".")[-2]
 
-    return input_path, input_name, language, banned_words
+    return input_path, input_name, language, banned_words, jobs
 
 
 params = call_script()
