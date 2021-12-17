@@ -4,7 +4,7 @@
 Luis.*
 
 <p align="center">
- <img src="https://github.com/YannickSpoerl/whatsapp-chat-analysis/blob/main/example.gif" alt="Example" width="300" height="300">
+ <img src="https://github.com/YannickSpoerl/whatsapp-chat-analysis/blob/main/example.gif" alt="Example" width="800">
 </p>
 
 Analyses a WhatsApp chat (private or group) and creates various beautiful graphs about
