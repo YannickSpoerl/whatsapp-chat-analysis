@@ -3,6 +3,8 @@
 *Inspired by [this Medium post](https://medium.com/mcd-unison/whatsapp-group-chat-analysis-with-python-3f5196280ba) by
 Luis.*
 
+*Check out the related [blog post](https://yannickspoerl.de/projects/whatsapp-chat-analysis/) on my personal website.*
+
 <p align="center">
  <img src="https://github.com/YannickSpoerl/whatsapp-chat-analysis/blob/main/example.gif" alt="Example" width="800">
 </p>
